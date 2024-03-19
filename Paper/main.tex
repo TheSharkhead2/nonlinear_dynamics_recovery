@@ -1,0 +1,104 @@
+% used template from Overleaf: https://www.overleaf.com/latex/templates/academic-paper/rjttmshldvgg
+
+% weird fix for biblatex from: https://tex.stackexchange.com/questions/568021/package-biblatex-error-patching-addtocontents-failed
+\let\latexaddtocontents\addtocontents
+\documentclass[10pt]{paper}
+\let\addtocontents\latexaddtocontents
+
+
+
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{dcolumn}
+\usepackage{hyperref}
+
+\usepackage{biblatex} % https://www.overleaf.com/learn/latex/Bibliography_management_in_LaTeX
+\addbibresource{main.bib}
+
+\begin{document}
+
+\title{MATH181 Project: Automatic Identification of Nonlinear Systems}
+\author{Theo Rode}
+
+% \affiliation{Somewhere}
+
+% \begin{abstract}
+% Your abstract.
+% \end{abstract}
+
+\maketitle
+
+\section{Introduction}
+\label{sec:introduction}
+This project discusses the procedure of recovering the underlying equations for the dynamics given noisy data collected by the system. So called ``physics-inspired'' or ``physics-informed'' AI.
+The goal of this field is to gain a physical understanding of systems where we can measure various trajectories, but the dynamics are unknown. Though this is additionally useful in situations where complex systems have dynamical properties that can be modeled on a smaller scale. 
+In particular, the focus of this project is on discussing the results demonstrated in a paper published in 2016 by Steven Brunton, Joshua Proctor, and Nathan Kutz who propose an algorithm for reconstructing dynamics dubbed SINDy (Sparse Identification of Nonlinear Dynamics) \cite{sindy}.
+This first section aims to discuss the field more broadly and relevant papers to the results proposed in the aforementioned paper as well as more generally in the field. 
+
+The authors of \cite{sindy} give two foundational papers for recovering the dynamics of nonlinear systems: a paper by Josh Bongard and Hod Lipson \cite{bongard} and one by Michael Schmidt and Hod Lipson \cite{schmidt}, in 2007 and 2009 respectively.
+Bongard and Lipson \cite{bongard} outline a method for ``reverse engineering'' the dynamics of nonlinear systems utilizing an active learning system. 
+The main process of the algorithm is a technique labeled \textbf{symbolic regression}.
+In \cite{bongard}, symbolic regression is made usable for complicated (nonlinear) systems by introducing three concepts: partitioning, automated probing, and snipping. Partitioning is a process by which the algorithm is able to model each of the variables in the system separately using Stochastic optimization. 
+Each of the variables are integrated by substituting in representations of the other variables rather than integrating the variables together. This method significantly reduces the overhead when working with high dimensional systems. Automated probing allows the algorithm to explore the system through active learning. After candidate models are created, the algorithm attempts to create many ``tests'' which are judged against their ability to disprove as many of the candidate models as possible. Then, the test which rejects as many of the candidate models as possible is used to judge the performance of all candidate models in order to pick the most capable ones. From this, the next generation of candidate models can be generated. 
+Finally, snipping is a process to reduce the complexity of the generated models and prevent over-fitting. In particular, when creating another generation of models, occasionally certain subexpressions will be replaced with a value of the subexpression picked uniformly from its range. This acts to reduce situations where the models will create complex subexpressions which take on narrow ranges of values, demonstrating over-fitting to the data. 
+Together, these innovations on the process of symbolic regression allowed Bongard and Lipson to create a framework that was applicable to an array of real-world systems. The framework demonstrated the ability to find nonlinearities and interdependencies as well as an ability to scale successfully. However, the authors note that current limitations include not yet demonstrating scalability to much larger biological models and an inability to work on data where certain variables are unobservable, as a key component of the framework was the active learning \cite{bongard}. 
+
+Schmidt and Lipson present a different algorithm for reconstructing dynamics that is still based on \textbf{symbolic regression} \cite{schmidt}. This paper focuses on presenting a new metric for comparing the accuracy of various candidate equations in order to better search for invariants within the system. In particular, once candidate equations are generated (initially randomly from a set of ``building blocks''), the partial derivative pairings of every pair of variables are compared to the numerically calculated partial derivative pairings in order to select the equations which model these pairs the closest. The next generation of equations is then generated from these best equations probabilistically. The algorithm will return a set of equations when they reach a certain accuracy to the observed data, calculated from a subset of the data randomly selected to be withheld from training. 
+Furthermore, these equations are prioritized according to a measured parsimony, effectively complexity which is calculated by the number of terms in the expression. The authors were able to demonstrate that this algorithm could reconstruct invariants from numerous physical systems effectively. Additionally, they noticed that with a limited set of building blocks, the algorithm found approximations to functions like sines and cosines, utilizing the available building blocks, when such functions were part of the physical invariant \cite{schmidt}. 
+
+% TALK ABOUT MORE RECENT PAPER? 
+
+% mention LASSO: https://watermark.silverchair.com/jrsssb_58_1_267.pdf?token=AQECAHi208BE49Ooan9kkhW_Ercy7Dm3ZL_9Cf3qfKAc485ysgAAA3swggN3BgkqhkiG9w0BBwagggNoMIIDZAIBADCCA10GCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMUUUguuXeXSXLKrHyAgEQgIIDLjjGy45TLem5-SWBsiKqth_ATlBiN1U8oB2jwRawwKAQLhSBq9mr6Xxoy5NWpIW4ICk-qvgW4vlMPUFgp3aXI1CPO7BCP5VER8ruRsVHe-xFxsJrz1Idh0wPazgvEt6cHJfNxeEWOxiBPBYyPMSESASwKHfX4EQxoq_Au2Bzkg6gFRWiGBSestTCekla3yBbmJ9FMWqtL0hVt0LtXXwf81ICM7qX_y4YW0ZKOUS2M9z2EEIMgWCkfeivpJT0CJi8CWfL7oorAsCpsu_wxGucDzNm_Ki_SqlaNZAU-mI3iVIxr4FUCWJxgh8mfeHxCJttaC1p97U5TX3OTzL_S71k4-4DNrWUaGhKgRe2QEXZg8SLWnsRolTN6MBmtlfstqIoMP4PPsaIJ_93YWxRALnL_pdknBTh2edgos_NVDt6nMC41LoCepoI8cSD0BgcJo3L_v3Fa4KOnVHpfLED7PCgj_mT7UY2d4dJlO_3ryWWXa_NhgGbXUywx8KOJzC0M1O0ZAEo0pmz50mMzp0XyVQX6sl3uCHzDB8zHWfI8-BHBzC5dYDHKeGx7xS8H4wws5EriZX_jeHIG4NYUTbCLV0IaVCx4nxTrc6gglm8D2aqlBjI52KHj7iIi78EKZ7pcrgfJ6-RA2rb2435a--KHrXE1S5E4feJA2KWhx7VBEn-t53uszHD7bE3sOrHU7qHDzYKWeuk3T_ewVJuyE8_-P7tLVtWoSKxvsqT1mR4inR6UKmJbHjyTH0HV2QQ6ybtztDj7hrgVPQROkmBMhURkCaGMJHTFeYtdF9W4ZGb7O432f22h7ousNc5dDIAAyGtxGI6doK4bS35eWPzqVMZ5Q4D9WIncF_ehYujzLdosbyNyZLt9SPwaPCBfHwwXCxyDkArH_MWjjOyz-h6D0JxXRyTOyZhw9vbNp8vkpccU0W1zNfmyYn8SkDQJwpN5L1mUpPXeASQb4eH8rE6VttkD09Lmqv4hy502xE-88dYoKVoOToavtAVT9nc-ARwnQ4eyS1dkmPBfy9KOlIz7WHvIg0XFbNoG5AoMjCya6vdfYmDLgNJuhvRVilIhFkuuxMw2cc
+% supposedly helpful for sparse regression? 
+
+% talk about advances in compressed sensing seen here: https://journals.aps.org/prl/pdf/10.1103/PhysRevLett.106.154101
+
+\section{Mathematical Background}
+For the SINDy algorithm, the authors aimed to reframe the problem of recovering nonlinear dynamics using \textbf{sparse regression} and \textbf{compressed sensing} \cite{sindy}. Both sparse regression and compressed sensing broadly refer to the process of finding a regression solution to a problem such that the solution is sparse in some space \cite{sindy}. 
+Brunton et al. relate that utilizing sparse regression is a strategy to reduce the noise present in the fitting of systems \cite{sindy}. The particular assumptions for sparse regression come from the idea that in most cases, the dynamics for a particular system will be governed by a small set of given basis functions. Therefore, the sparsity also gives advantages for computation as we can increase the size of the function space dramatically without needing significantly more computation \cite{sindy}. 
+
+% mention LASSO here as alternative method for sparse regression
+The authors of \cite{sindy} propose an iterative algorithm for sparse regression. In particular, they start with a least-squares fit to the data, and then iteratively remove coefficients below a given threshold. By refitting with the remaining, nonzero terms iteratively, the algorithm can arrive at a sparse solution \cite{sindy}. 
+
+The SINDy algorithm relies on the availability of both sampled data, $\boldsymbol X$, and the sampled derivative, $\boldsymbol{\dot X}$. However, the authors note that the availability of derivative measurements are not guaranteed and therefore propose using the \textbf{total variation regularized derivative} to mitigate the noise created from numerically calculating $\boldsymbol {\dot X}$ from $\boldsymbol X$ \cite{sindy}. In particular, they cite the algorithm used by Rudin et al. \cite{rudin}. 
+Here, Rudin et al. use a framework for computing a desired, denoised output, $u$, from a noisy input, $u_0$, by assuming that $u = u_0 + n$ for some white noise function $n$. It is assumed that $n$ has a mean of $0$ with some given standard deviation. 
+The minmization problem corresponds to minimizing $\int_\Omega \sqrt{u_x^2 + u_y^2} \, \mathrm d A$, which is contrained by $\int_\Omega u \, \mathrm dA = \int_\Omega u_0 \, \mathrm dA$ under the assumption of the additive white noise. It is then proposed to solve for $u$ through either an iterative algorithm (i.e. simulated annealing) or, preferably, a PDE solver to find local minimum \cite{rudin}. 
+
+In order to address the computational difficulties present in higher-dimensional problems, Brunton et al. suggest using \textbf{proper orthogonal decomposition (POD)} in order to perform dimension reduction \cite{sindy}. 
+Berkooz at el. outline the process of POD on a space of functions \cite{berkooz}. In particular, POD aims to produce a set of vectors (eigenfunctions) and corresponding eigenvalues which best represent a given vector field with coefficients that are uncorrelated (part of a random process) \cite{berkooz}. 
+% https://arc.aiaa.org/doi/epdf/10.2514/1.J058809 (POD)
+
+\subsection{SINDy}
+The most basic systems considered for the algorithm SINDy are those of the form 
+\[ \frac{\mathrm d}{\mathrm dt} \boldsymbol x(t) = \boldsymbol f (\boldsymbol x(t)). \]
+In order to use the concepts of sparse regression and compressed sensing, discussed above, the authors assume that $\boldsymbol f$ is sparse in some function space \cite{sindy}.
+The state vector, $\boldsymbol x(t)$, is collected over some time period and $\boldsymbol {\dot x}$ is either sampled alongside $\boldsymbol x(t)$ or numerically calculated from it. 
+These samplings create the following matrices: 
+\[ \boldsymbol X = \begin{bmatrix}
+	\boldsymbol x^T(t_1) \\ \boldsymbol x^T(t_2) \\ \vdots \\ \boldsymbol x^T(t_m)
+\end{bmatrix}, \]  
+and the immediately following $\boldsymbol {\dot X}$. We can then construct a library of candidate functions: 
+\[  \Theta(\boldsymbol X) = \begin{bmatrix} \mid & \mid & \mid & \mid &  & \mid & \mid & \\ 1 & \boldsymbol X & {\boldsymbol X}^{P_2} & {\boldsymbol X}^{P_3} & \cdots & \sin{(\boldsymbol X)} & \cos{(\boldsymbol X)} & \cdots \\ \mid & \mid & \mid & \mid & & \mid & \mid & \end{bmatrix}.  \]
+Each column of $\Theta(\boldsymbol X)$, therefore, represents a candidate function for $\boldsymbol f$. This therefore sets up the sparse regression problem 
+\[ \boldsymbol {\dot X} = \Theta(\boldsymbol X)\Xi. \]
+
+
+% \section{}
+% \label{sec:examples}
+
+% \subsection{Sections}
+
+
+
+
+% \begin{acknowledgments}
+
+% We thank\dots
+
+% \end{acknowledgments}
+
+\newpage
+\printbibliography
+
+\end{document}
