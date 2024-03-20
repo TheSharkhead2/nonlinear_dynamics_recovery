@@ -81,8 +81,10 @@ These samplings create the following matrices:
 and the immediately following $\boldsymbol {\dot X}$. We can then construct a library of candidate functions: 
 \[  \Theta(\boldsymbol X) = \begin{bmatrix} \mid & \mid & \mid & \mid &  & \mid & \mid & \\ 1 & \boldsymbol X & {\boldsymbol X}^{P_2} & {\boldsymbol X}^{P_3} & \cdots & \sin{(\boldsymbol X)} & \cos{(\boldsymbol X)} & \cdots \\ \mid & \mid & \mid & \mid & & \mid & \mid & \end{bmatrix}.  \]
 Each column of $\Theta(\boldsymbol X)$, therefore, represents a candidate function for $\boldsymbol f$. This therefore sets up the sparse regression problem 
-\[ \boldsymbol {\dot X} = \Theta(\boldsymbol X)\Xi. \]
-
+\[ \boldsymbol {\dot X} = \Theta(\boldsymbol X)\boldsymbol \Xi. \]
+In particular, $\boldsymbol \Xi = \begin{bmatrix}
+	\boldsymbol \xi_1 & \boldsymbol \xi_2 & \cdots & \boldsymbol \xi_n
+\end{bmatrix}$ where each $\xi_i$ is a sparse vector dictating which functions in the function library are active for each of the row equations in $\boldsymbol f$. 
 
 % \section{}
 % \label{sec:examples}
