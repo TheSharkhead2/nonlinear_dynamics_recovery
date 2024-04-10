@@ -12,9 +12,42 @@
 \usepackage{graphicx}
 \usepackage{dcolumn}
 \usepackage{hyperref}
+\usepackage{float}
+
+\graphicspath{ {./images/} }
 
 \usepackage{biblatex} % https://www.overleaf.com/learn/latex/Bibliography_management_in_LaTeX
 \addbibresource{main.bib}
+
+% Code blocks
+\usepackage[theme=default]{jlcode}
+% \usepackage{listings, xcolor}
+
+% \definecolor{codegreen}{rgb}{0,0.6,0}
+% \definecolor{codegray}{rgb}{0.5,0.5,0.5}
+% \definecolor{codepurple}{rgb}{0.58,0,0.82}
+% \definecolor{backcolour}{rgb}{0.95,0.95,1}
+
+% \lstdefinestyle{mystyle}{
+%     backgroundcolor=\color{backcolour},   
+%     commentstyle=\color{codegreen},
+%     keywordstyle=\color{magenta},
+%     numberstyle=\tiny\color{codegray},
+%     stringstyle=\color{codepurple},
+%     basicstyle=\ttfamily\footnotesize,
+%     breakatwhitespace=false,         
+%     breaklines=true,                 
+%     captionpos=b,                    
+%     keepspaces=true,                 
+%     numbers=left,                    
+%     numbersep=5pt,                  
+%     showspaces=false,                
+%     showstringspaces=false,
+%     showtabs=false,                  
+%     tabsize=4
+% }
+
+% \lstset{style=mystyle}
 
 \begin{document}
 
@@ -61,30 +94,217 @@ Brunton et al. relate that utilizing sparse regression is a strategy to reduce t
 % mention LASSO here as alternative method for sparse regression
 The authors of \cite{sindy} propose an iterative algorithm for sparse regression. In particular, they start with a least-squares fit to the data, and then iteratively remove coefficients below a given threshold. By refitting with the remaining, nonzero terms iteratively, the algorithm can arrive at a sparse solution \cite{sindy}. 
 
-The SINDy algorithm relies on the availability of both sampled data, $\boldsymbol X$, and the sampled derivative, $\boldsymbol{\dot X}$. However, the authors note that the availability of derivative measurements are not guaranteed and therefore propose using the \textbf{total variation regularized derivative} to mitigate the noise created from numerically calculating $\boldsymbol {\dot X}$ from $\boldsymbol X$ \cite{sindy}. In particular, they cite the algorithm used by Rudin et al. \cite{rudin}. 
+The SINDy algorithm relies on the availability of both sampled data, $\mathbf X$, and the sampled derivative, $\mathbf{\dot X}$. However, the authors note that the availability of derivative measurements are not guaranteed and therefore propose using the \textbf{total variation regularized derivative} to mitigate the noise created from numerically calculating $\mathbf {\dot X}$ from $\mathbf X$ \cite{sindy}. In particular, they cite the algorithm used by Rudin et al. \cite{rudin}. 
 Here, Rudin et al. use a framework for computing a desired, denoised output, $u$, from a noisy input, $u_0$, by assuming that $u = u_0 + n$ for some white noise function $n$. It is assumed that $n$ has a mean of $0$ with some given standard deviation. 
 The minmization problem corresponds to minimizing $\int_\Omega \sqrt{u_x^2 + u_y^2} \, \mathrm d A$, which is contrained by $\int_\Omega u \, \mathrm dA = \int_\Omega u_0 \, \mathrm dA$ under the assumption of the additive white noise. It is then proposed to solve for $u$ through either an iterative algorithm (i.e. simulated annealing) or, preferably, a PDE solver to find local minimum \cite{rudin}. 
 
-In order to address the computational difficulties present in higher-dimensional problems, Brunton et al. suggest using \textbf{proper orthogonal decomposition (POD)} in order to perform dimension reduction \cite{sindy}. 
-Berkooz at el. outline the process of POD on a space of functions \cite{berkooz}. In particular, POD aims to produce a set of vectors (eigenfunctions) and corresponding eigenvalues which best represent a given vector field with coefficients that are uncorrelated (part of a random process) \cite{berkooz}. 
-% https://arc.aiaa.org/doi/epdf/10.2514/1.J058809 (POD)
+% In order to address the computational difficulties present in higher-dimensional problems, Brunton et al. suggest using \textbf{proper orthogonal decomposition (POD)} in order to perform dimension reduction \cite{sindy}. 
+% Berkooz at el. outline the process of POD on a space of functions \cite{berkooz}. In particular, POD aims to produce a set of vectors (eigenfunctions) and corresponding eigenvalues which best represent a given vector field with coefficients that are uncorrelated (part of a random process) \cite{berkooz}. 
+% % https://arc.aiaa.org/doi/epdf/10.2514/1.J058809 (POD)
 
-\subsection{SINDy}
+\subsection{SINDy} \label{sec:SINDy}
 The most basic systems considered for the algorithm SINDy are those of the form 
-\[ \frac{\mathrm d}{\mathrm dt} \boldsymbol x(t) = \boldsymbol f (\boldsymbol x(t)). \]
-In order to use the concepts of sparse regression and compressed sensing, discussed above, the authors assume that $\boldsymbol f$ is sparse in some function space \cite{sindy}.
-The state vector, $\boldsymbol x(t)$, is collected over some time period and $\boldsymbol {\dot x}$ is either sampled alongside $\boldsymbol x(t)$ or numerically calculated from it. 
+\[ \frac{\mathrm d}{\mathrm dt} \mathbf x(t) = \mathbf f (\mathbf x(t)). \]
+In order to use the concepts of sparse regression and compressed sensing, discussed above, the authors assume that $\mathbf f$ is sparse in some function space \cite{sindy}.
+The state vector, $\mathbf x(t)$, is collected over some time period and $\mathbf {\dot x}$ is either sampled alongside $\mathbf x(t)$ or numerically calculated from it. 
 These samplings create the following matrices: 
-\[ \boldsymbol X = \begin{bmatrix}
-	\boldsymbol x^T(t_1) \\ \boldsymbol x^T(t_2) \\ \vdots \\ \boldsymbol x^T(t_m)
+\[ \mathbf X = \begin{bmatrix}
+	\mathbf x^T(t_1) \\ \mathbf x^T(t_2) \\ \vdots \\ \mathbf x^T(t_m)
+\end{bmatrix} = \begin{bmatrix}
+	x_1(t_1) & x_2(t_1) & \cdots & x_n(t_1) \\
+	x_1(t_2) & x_2(t_2) & \cdots & x_n(t_2) \\
+	\vdots & \vdots & \ddots & \vdots \\ 
+	x_1(t_m) & x_2(t_m) & \cdots & x_n(t_m)
 \end{bmatrix}, \]  
-and the immediately following $\boldsymbol {\dot X}$. We can then construct a library of candidate functions: 
-\[  \Theta(\boldsymbol X) = \begin{bmatrix} \mid & \mid & \mid & \mid &  & \mid & \mid & \\ 1 & \boldsymbol X & {\boldsymbol X}^{P_2} & {\boldsymbol X}^{P_3} & \cdots & \sin{(\boldsymbol X)} & \cos{(\boldsymbol X)} & \cdots \\ \mid & \mid & \mid & \mid & & \mid & \mid & \end{bmatrix}.  \]
-Each column of $\Theta(\boldsymbol X)$, therefore, represents a candidate function for $\boldsymbol f$. This therefore sets up the sparse regression problem 
-\[ \boldsymbol {\dot X} = \Theta(\boldsymbol X)\boldsymbol \Xi. \]
-In particular, $\boldsymbol \Xi = \begin{bmatrix}
+and the immediately following $\mathbf {\dot X}$. We can then construct a library of candidate functions: 
+\[  \Theta(\mathbf X) = \begin{bmatrix} \mid & \mid & \mid & \mid &  & \mid & \mid & \\ 1 & \mathbf X & {\mathbf X}^{P_2} & {\mathbf X}^{P_3} & \cdots & \sin{(\mathbf X)} & \cos{(\mathbf X)} & \cdots \\ \mid & \mid & \mid & \mid & & \mid & \mid & \end{bmatrix}.  \]
+Here, $\mathbf X^{P_2}$ represents the quadratic nonlinearities in $\mathbf f$, in particular: 
+\[ \mathbf X^{P_2} = \begin{bmatrix}
+	x_1^2(t_1) & x_1(t_1)x_2(t_1) & \cdots & x_1(t_1)x_n(t_1) & x_2^2(t_1) & \cdots & x_n^2(t_1) \\
+	x_1^2(t_2) & x_1(t_2)x_2(t_2) & \cdots & x_1(t_2)x_n(t_2) & x_2^2(t_2) & \cdots & x_n^2(t_2) \\
+	\vdots & \vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\
+	x_1^2(t_m) & x_1(t_m)x_2(t_m) & \cdots & x_1(t_m)x_n(t_m) & x_2^2(t_m) & \cdots & x_n^2(t_m) \\
+\end{bmatrix}. \]
+Similarly, $\sin{(\mathbf X)}$ would be 
+\[ \sin{(\mathbf X)} = \begin{bmatrix}
+	\sin(x_1(t_1)) & \sin(x_2(t_1)) & \cdots & \sin(x_n(t_1)) \\ 
+	\sin(x_1(t_2)) & \sin(x_2(t_2)) & \cdots & \sin(x_n(t_2)) \\
+	\vdots & \vdots & \ddots & \vdots \\ 
+	\sin(x_1(t_m)) & \sin(x_2(t_m)) & \cdots & \sin(x_n(t_m))
+\end{bmatrix}. \]
+Therefore, each column of $\Theta(\mathbf X)$ represents a candidate function for $\mathbf f$. From this, we set up the sparse regression problem
+\[ \mathbf {\dot X} = \Theta(\mathbf X)\mathbf \Xi. \]
+In particular, $\mathbf \Xi = \begin{bmatrix}
 	\boldsymbol \xi_1 & \boldsymbol \xi_2 & \cdots & \boldsymbol \xi_n
-\end{bmatrix}$ where each $\xi_i$ is a sparse vector dictating which functions in the function library are active for each of the row equations in $\boldsymbol f$. 
+\end{bmatrix}$ where each $\boldsymbol \xi_i$ is a sparse vector dictating which functions in the function library are active for each of the row equations in $\mathbf f$. The sparse regression problem is an iterative algorithm that iteratively thresholds out coefficients in $\mathbf \Xi$ under some sparsity parameter, $\lambda$, and then refits the problem on the remaining functions. 
+
+The authors additionally suggest a slight modification to the algorithm in order to detect bifurcations present in a system. In particular, the authors appended the bifurcation parameter to the dynamics: 
+\begin{equation} \label{eq:sindy_with_bifurcation}
+	\begin{split}
+		\mathbf {\dot x} &=  \mathbf{f}(\mathbf x; \mu), \\
+		\dot \mu &= 0.
+	\end{split}
+\end{equation}
+Then, by sampling data from different values of $\mu$, it is possible for SINDy to reconstruct the system from combinations of $\mathbf x$ as well as $\mu$. In turn, the system can then find the dynamics present with changes in $\mu$, and hence bifurcations. 
+
+\section{Results}
+\subsection{Code}
+The main object in recreating the results presenting in the paper was writing a codebase that is able to recreate the SINDy algorithm. 
+I wrote the code in the Julia Programming Language \cite{julia} and with all plotting done in PlotlyBase.jl \cite{PlotlyBase.jl}.
+
+All data used to train the SINDy model was collected by integrating using ordinary differential equation (ODE) solvers provided by the DifferentialEquations.jl \cite{rackauckas2017differentialequations} package.
+For the numerical stability of the model, data was collected at fixed timesteps, as shown in Listing \ref{lorenz_data} for the Lorenz system.
+
+\jlinputlisting[language = Julia, caption = {Lorenz system data simulation}, label = {lorenz_data}, firstline = 9, lastline = 14]{../Code/DynamicsRecovery/src/Systems/lorenz.jl}
+
+Additionally, noise sampled from a standard normal distribution was scaled by a noise parameter and added to the collected data before SINDy was trained on it. This code utilized the Distributions.jl \cite{JSSv098i16}\cite{Distributions.jl-2019} package to provide the normal distribution. 
+Once the data was collected and noise applied, the program constructed the data matrix, $\mathbf X$, and the corresponding derivative matrix, $\mathbf {\dot X}$. Differentiation is done in one of two ways, either through direct numerical differentiation, using Interpolations.jl \cite{Interpolations.jl}, or using the total-variation regularization derivative, provided by NoiseRobustDifferentiation.jl \cite{chartrand2011numerical}\cite{NoiseRobustDifferentiation.jl}.
+Using a linear interpolation to compute the derivatives had the additional benefit of being more stable when samples were not taken with constant timestamps, and deviates in approach from the code written by Brunton et al. \cite{sindy}. 
+The code for constructing the data and derivative libraries is shown in Listing \ref{X_Xdot_construction}. 
+
+% https://tex.stackexchange.com/questions/73231/avoid-page-breaks-in-lstlistings
+% https://tex.stackexchange.com/questions/39017/how-to-influence-the-position-of-float-environments-like-figure-and-table-in-lat
+\jlinputlisting[language = Julia, caption = {Data and derivative library construction}, label = {X_Xdot_construction}, firstline = 68, lastline = 95, float, floatplacement = tb]{../Code/DynamicsRecovery/src/SINDy/data_ingestion.jl}
+
+Utilizing the data matrix, $\mathbf X$, it is then simple to construct the function library, $\mathbf \Theta(\mathbf X)$.
+Unlike the original paper \cite{sindy}, this implementation allows for arbitrary functions to be used and provides a framework for easily expanding the type and quantity of functions used. 
+In particular, along with the potential to fit arbitrary functions, the generation of polynomial terms was done generally to support arbitrary degree polynomials utilizing functions Combinatorics.jl \cite{Combinatorics.jl}.
+
+Finally, the sparse regression algorithm to compute $\mathbf \Xi$ is the same process as outlined by Brunton et al. \cite{sindy}. In particular, the starting point for the iterative algorithm is a least-squares solution to the problem using a standard regression. Then, over $k$ iterations, coefficients in $\mathbf \Xi$ which are less than the sparsity parameter, $\lambda$, are dropped and replaced with zero. In each of these iterations, the regression is then recomputed with only the nonzero entries. 
+This code is presented in Listing \ref{sparse_regression}.
+
+\jlinputlisting[language = Julia, caption = {Sparse regression}, label = {sparse_regression}, firstline = 3, lastline = 23, float, floatplacement = ptb]{../Code/DynamicsRecovery/src/SINDy/sparse_regression.jl}
+
+The resulting system defined by $\mathbf \Xi$ can then be solved using the same methods as when collecting data for the original system. The governing equations are constructed using the same function generation from the library construction in order to ensure complete generality. 
+
+
+\subsection{The Lorenz Attractor} \label{sec:lorenz_results}
+In replicating the results of Brunton et al., I first pursued replicating the success they found in recoverying the dynamics present in the chaotic Lorenz System \cite{sindy}\cite{lorenz1963deterministic}. 
+The dynamics for this system are governed by the following equations, 
+\begin{equation}\label{eq:lorenz}
+\begin{split}
+	\dot x &= \sigma(y - x), \\
+	\dot y &= x(\rho - z) - y, \\
+	\dot z &= xy - \beta z.
+\end{split}
+\end{equation}
+I used the same initial conditions and parameters that Brunton et al. \cite{sindy} used for their demonstrations. In particular, $u_0 = (-8, 7, 27)$ and parameters $(\sigma, \rho, \beta) = \left( 10, 28, \frac 83 \right)$. 
+Figure \ref{fig:lorenz_system_actual} shows the actual system with these parameters and initial condition. 
+
+\begin{figure}[h]
+	\caption{Lorenz system}
+	\label{fig:lorenz_system_actual}
+
+	\centering
+	\includegraphics[width = 0.47\textwidth, trim={4.3cm, 1.9cm, 4.3cm, 3.5cm}, clip]{lorenz_actual_graph.png}
+\end{figure}
+
+I ran the SINDy algorithm on both data with noise of magnitude $\eta = 0.01$ and $\eta = 0.1$. Of interest is the system with $\eta = 0.1$ was only able to converge on a solution when the derivative was computed using the total-variation regularization derivative. 
+For a function basis, I chose a basis comprised of all 7th-degree polynomial terms and all sines and cosines of the form $\sin{(ku_i)}$ and $\cos{(ku_i)}$ for all $\{u_i\} = \{x,y,z\}$ and integer $k$ from $1$ to $10$. This created a basis of $180$ possible functions. 
+Further, the sparsification parameter was chosen to be $\lambda = 0.25$ with 10 iterations for sparse regression.
+Integration of the input data was done over a timespan from $0$ to $100$ with $dt = 0.001$. 
+The resulting systems from $\eta = 0.01$ are shown in Figure \ref{fig:lorenz_system_found_001} and the system resulting from $\eta = 0.1$ is shown in Figure \ref{fig:lorenz_system_found_01}. 
+
+\begin{figure}[h]
+	\caption{Discovered Lorenz system with noise $\eta = 0.01$}
+	\label{fig:lorenz_system_found_001}
+
+	\centering 
+	\begin{minipage}{0.47\textwidth}
+		\begin{center}
+			\includegraphics[width = \textwidth, trim={4.3cm, 1.9cm, 4.3cm, 3.5cm}, clip]{lorenz_found_001_normal.png}
+
+			With standard derivative calculation
+		\end{center}
+	\end{minipage}%
+	\begin{minipage}{0.47\textwidth}
+		\begin{center}
+			\includegraphics[width = \textwidth, trim={4.3cm, 1.9cm, 4.3cm, 3.5cm}, clip]{lorenz_found_001_tvdiff.png}
+
+			With total-variation regularization derivative
+		\end{center}
+	\end{minipage}
+\end{figure}	
+
+\begin{figure}[h]
+	\caption{Discovered Lorenz system with noise $\eta = 0.1$ and total-variation regularization differentiation}
+	\label{fig:lorenz_system_found_01}
+
+	\centering
+	\includegraphics[width = 0.47\textwidth, trim={4.3cm, 1.9cm, 4.3cm, 3.5cm}, clip]{lorenz_found_01_tvdiff.png}
+\end{figure}
+
+We see that the SINDy algorithm was able to effectively capture the attracting dynamics present in the Lorenz system in all cases. Furthermore, for the standard derivative and noise $\eta = 0.01$, the discovered system had the form 
+\begin{equation} \label{eq:found_lorenz_001}
+	\begin{split}
+		\dot x &= -9.982573809940325x + 9.999536628579511y, \\
+	\dot y &= 27.573169299598813x - 0.8370109395705518y - 0.98935201514641xz, \\
+	\dot z &= -2.660754272317803z + 0.9988807483584906xy.
+	\end{split}
+\end{equation}
+Comparing this result to the actual system (Equation \ref{eq:lorenz}), we see that the discovered system has perfectly identified the polynomial terms in the system with coefficients that are almost identical. We see similar strength in identifying the system for $\eta = 0.01$ (Equation \ref{eq:found_lorenz_001_tv}) and $\eta = 0.1$ (Equation \ref{eq:found_lorenz_01_tv}) systems with total-variation regularization derivatives.
+\begin{equation} \label{eq:found_lorenz_001_tv}
+	\begin{split}
+		\dot x &= -9.946417397865872x + 9.97621578174998y, \\
+		\dot y &= 27.0485300793758x - 0.670689440675418y - 0.976667757332429xz, \\
+		\dot z &= -2.6495215942228163z + 0.996381152512881xy.
+	\end{split}
+\end{equation}
+\begin{equation} \label{eq:found_lorenz_01_tv}
+	\begin{split}
+		\dot x &= -9.805048724434341x + 9.835722669096466y, \\
+		\dot y &= 25.92133086771059x - 0.433587521465246y - 0.946115512156319xz, \\
+		\dot z &= -1.930341755171950 - 2.54324607967731z + 0.983562354075398xy.
+	\end{split}
+\end{equation}
+
+We do see a forcing term introduced in the higher noise, $\eta = 0.1$, system for $\dot z$ which represents a term not present in actual system or the other two discovered systems. Though decreased performance is expected with higher noise. 
+
+\subsection{Bifurcations: The Hopf normal form}
+In addition to SINDy's ability to extract the system dynamics from the chaotic Lorenz attractor (\ref{sec:lorenz_results}), Section \ref{sec:SINDy} discussed how Brunton et al. discussed a modification to SINDy which would allow the detection of bifurcations in a system \cite{sindy}. 
+Similar to the authors, I will demonstrate this using the Hopf normal form:
+\begin{equation} \label{eq:hopf_normal}
+	\begin{split}
+		\dot x &= \mu x - \omega y - Ax(x^2 + y^2), \\
+		\dot y &= \omega x +\mu y - Ay(x^2 + y^2).
+	\end{split}
+\end{equation} 
+While $\mu$ is the bifurcation parameter and will be varried, I will take $\omega = A = 1$. In order for SINDy to discover the bifurcation in its system, we have to collect data over a range of $\mu$ values. 
+In particular, I collected data for 16 values of $\mu$ between $-0.2$ and $0.55$, with a Hopf bifurcation occurring when $\mu = 0$. For negative values of $\mu$, I collected data with the initial condition $(x_0,y_0) = (2,0)$, while for positive values data was collected both for this initial condition and for $(x_0, y_0) = (0.01, 0)$ in order to capture the limit cycle behavior. 
+Further, all collected data was given noise of magnitude $\eta = 0.005$. 
+
+In order to account for multiple orbits worth of data, the derivatives for each orbit were calculated separately using the total-variation regularization derivative. Then, the $\mathbf X$ and $\mathbf {\dot X}$ matrices for all orbits were combined into a single data and derivative matrix. 
+These could then be passed through SINDy as previously. For this example, a basis of all polynomials through 5th degree was used, with sparsity parameter $\lambda = 0.25$ and $10$ iterations of the sparse regression. Figure \ref{fig:discovered_hopf_0005} shows the discovered system as various values of $\mu$ and its ability to detect the Hopf bifurcation. 
+
+\begin{figure}[h]
+	\caption{Discovered Hopf bifurcation. Blue orbits start at $(x_0, y_0) = (2,0)$ and red orbits start at $(x_0, y_0) = (0.01, 0)$.}
+	\label{fig:discovered_hopf_0005}
+
+	\centering 
+
+	\includegraphics[width = 0.7\textwidth, trim={4.3cm, 1.9cm, 4.3cm, 3.5cm}, clip]{found_hopf_bifurcation_0005.pdf}
+\end{figure}
+
+Furthermore, SINDy found the system to be given by 
+
+\begin{equation}\label{eq:discovered_hopf_0005}
+	\begin{split}
+		\dot x &= -0.9916y + 0.9314\mu x - 0.9178x^3 - 0.9178xy^2 - 0.3081x^4y, \\
+		\dot y &= 0.9972x + 0.9926\mu y - 0.9811x^2y - 0.9814y^3.
+	\end{split}
+\end{equation}
+Here we notice that barring the $-0.3081x^4y$ term in the equation for $\dot x$, the algorithm was able to identify the constants remarkably well and the nonlinear terms accurately. 
+Though, its important to note that depending on the noise added to the system, the resulting system can be significantly worse. In particular, Equation \ref{eq:bad_discovered_hopf_0005} resulted from the same parameters but with different noise applied. 
+\begin{equation}\label{eq:bad_discovered_hopf_0005}
+	\begin{split}
+		\dot x &= -0.9971y + 0.8704\mu x - 0.8617x^3 - 0.9177xy^2 + 0.9186\mu x^2 y  - 0.2853 xy^3 \\
+		&\qquad - 0.9918 \mu x y^2 - 0.8546 x^4y + 1.2614 x^3y^2 - 1.0363 x^2y^3 + 1.0065 xy^4 \\ &\qquad + 0.5446\mu y^3 x, \\
+		\dot y &= 0.9968x + 0.9930\mu y - 0.9807x^2y - 0.9822 y^3.
+	\end{split}
+\end{equation}
+Interestingly, while $\dot y$ remained stable, $\dot x$ tends to me less stable. It is important to note, that while there are many additional higher-order polynomial terms, the qualatative behavior of the system is identical, still finding a Hopf bifurcation.
+
+
 
 % \section{}
 % \label{sec:examples}

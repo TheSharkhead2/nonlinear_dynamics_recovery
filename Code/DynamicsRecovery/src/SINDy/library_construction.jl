@@ -1,4 +1,7 @@
 using LinearAlgebra 
+using Combinatorics 
+
+using DynamicsRecovery.Utils
 
 """
     Θ(X; polynomials, functions) -> Matrix{Float64}
@@ -7,33 +10,32 @@ Constructs library of functions ``\\boldsymbol \\Theta (\\boldsymbol X)`` with d
 
 """
 function Θ(X::Matrix{Float64}; 
-    polynomials::Vector{Integer} = [], 
-    functions::Vector{Function} = [],
-    functions1::Vector{Function} = []
-)
+    polynomials::Vector{T} = [], 
+    functions = [],
+    functions1 = []
+) where T <: Integer
     if length(polynomials) == 0 && length(functions) == 0 && length(functions1) == 0 
         throw(ArgumentError("At least one candidate function needs to be supplied"))
     end # if
 
-    # system dimension is important 
-    dimension = size(X)[2]
-
     # vector to hold all candidate functions 
     function_library::Vector{Matrix{Float64}} = []
 
-    # construct polynomial parts of the library 
-    for n in polynomials 
-        # n = 0 and n = 1 are special cases 
-        if n == 0
-            push!(function_library, ones(size(X))) # constants
-        end # if 
-        if n == 1 
-            push!(function_library, X) # linear occurances 
-        end # if
-        
-        
+    polynomial_functions = construct_polynomials(polynomials, size(X)[2])
 
-    end # for n
-    
+    append!(functions, polynomial_functions)
+
+    for func in functions 
+        push!(function_library,
+            hcat([func(X[i, :]...) for i in 1:size(X)[1]]) # hcat is to convert to matrix 
+        )
+    end # for func
+
+    # for functions1, just apply the function to all items in X 
+    for func1 in functions1
+        push!(function_library, func1.(X))
+    end # for func1
+
+    hcat(function_library...)
 end # function Θ
 
