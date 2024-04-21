@@ -3,6 +3,15 @@ using DifferentialEquations
 using DynamicsRecovery.Utils
 
 function solve_constructed_system(Ξ, u0, tspan; polynomials = [], functions = [], functions1 = [])
+
+    found_system! = get_constructed_system(Ξ; polynomials = polynomials, functions = functions, functions1 = functions1)
+
+    system = ODEProblem(found_system!, u0, tspan)
+    # solve(system, Rosenbrock23())
+end # function solve_constructed_system
+
+function get_constructed_system(Ξ; polynomials = [], functions = [], functions1 = [])
+
     # add polynomials terms
     append!(functions, construct_polynomials(polynomials, size(Ξ)[2]))
 
@@ -67,6 +76,5 @@ function solve_constructed_system(Ξ, u0, tspan; polynomials = [], functions = [
         end # for n 
     end # function found_system!
 
-    system = ODEProblem(found_system!, u0, tspan)
-    # solve(system, Rosenbrock23())
-end # function solve_constructed_system
+    found_system!
+end # function get_constructed_system

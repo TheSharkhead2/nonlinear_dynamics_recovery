@@ -62,23 +62,37 @@
 
 \maketitle
 
-\section{Introduction}
-\label{sec:introduction}
-This project discusses the procedure of recovering the underlying equations for the dynamics given noisy data collected by the system. So called ``physics-inspired'' or ``physics-informed'' AI.
-The goal of this field is to gain a physical understanding of systems where we can measure various trajectories, but the dynamics are unknown. Though this is additionally useful in situations where complex systems have dynamical properties that can be modeled on a smaller scale. 
-In particular, the focus of this project is on discussing the results demonstrated in a paper published in 2016 by Steven Brunton, Joshua Proctor, and Nathan Kutz who propose an algorithm for reconstructing dynamics dubbed SINDy (Sparse Identification of Nonlinear Dynamics) \cite{sindy}.
-This first section aims to discuss the field more broadly and relevant papers to the results proposed in the aforementioned paper as well as more generally in the field. 
+\section{Introduction} \label{sec:introduction}
+Dynamical systems are mathematical objects used to describe anything and everything that changes. This gives rise to their utility in modeling a vast array of applications. Of course, physical systems are of particular interest as the rules of physics work in terms of velocity and acceleration---the descriptors of movement. 
+Though, in principle, far more than the cannonical examples of physical movement are ``changing.'' Economic models describe the changes in producer and consumer supply and demand, while biologists model the rise and fall of organism populations in an ecosystem. 
+The prevalence of these inherently changing systems leads to the field of dynamical systems having vast applicability to the world of mathematical modeling. Though while they are often the natural language to describe these situations, determining the particular dynamics in a given system is a fundamentally difficult problem. 
+
+This paper discusses a method through which data can be used to uncover the governing equations for a dynamical system. 
+%
+% This project discusses the procedure of recovering the underlying equations for the dynamics given noisy data collected by the system. So called ``physics-inspired'' or ``physics-informed'' AI.
+% The goal of this field is to gain a physical understanding of systems where we can measure various trajectories, but the dynamics are unknown. Though this is additionally useful in situations where complex systems have dynamical properties that can be modeled on a smaller scale. 
+In particular, the focus of this paper is on discussing the results demonstrated by Steven Brunton, Joshua Proctor, and Nathan Kutz in their paper published in 2016. They propose a new algorithm for reconstructing dynamics within a system called SINDy (Sparse Identification of Nonlinear Dynamics) \cite{sindy}.
+% This first section aims to discuss the field more broadly and relevant papers to the results proposed in the aforementioned paper as well as more generally in the field. 
+In this first section, I will discuss the field more broadly prior to Brunton, Proctor, and Kutz published their work. This will include a dicussion of relevant papers that provided the groundwork for the SINDy algorithm.
+In the section section (\ref{sec:mathematical_background}), I will discuss the relevant mathematical background for SINDy and its underlying mathematics. Section \ref{sec:results} will go deeper into the results demonstrated by Brunton et al. by discussing my work to recreate the SINDy algorithm. 
+Finally, section \ref{sec:discussion} offers a dicussion of the results in the paper and further areas of interest. 
 
 The authors of \cite{sindy} give two foundational papers for recovering the dynamics of nonlinear systems: a paper by Josh Bongard and Hod Lipson \cite{bongard} and one by Michael Schmidt and Hod Lipson \cite{schmidt}, in 2007 and 2009 respectively.
-Bongard and Lipson \cite{bongard} outline a method for ``reverse engineering'' the dynamics of nonlinear systems utilizing an active learning system. 
-The main process of the algorithm is a technique labeled \textbf{symbolic regression}.
-In \cite{bongard}, symbolic regression is made usable for complicated (nonlinear) systems by introducing three concepts: partitioning, automated probing, and snipping. Partitioning is a process by which the algorithm is able to model each of the variables in the system separately using Stochastic optimization. 
+Bongard and Lipson \cite{bongard} outline a method for ``reverse engineering'' the dynamics of nonlinear systems by utilizing an active learning system. 
+The main process of the algorithm is a technique labeled \textbf{symbolic regression}. Fundamentally, symbolic regression is a regression algorithm that is used to build up arbitrary equations to represent the given data. This is often accomplished through a genetic algorithm where ``function blocks'' are used to build possible functions, which are then tested with the best being used to create the next generation.
+In \cite{bongard}, symbolic regression is made usable for complicated (nonlinear) systems by introducing three concepts: partitioning, automated probing, and snipping. Partitioning is a process by which the algorithm is able to model each of the variables in the system separately using stochastic optimization. 
 Each of the variables are integrated by substituting in representations of the other variables rather than integrating the variables together. This method significantly reduces the overhead when working with high dimensional systems. Automated probing allows the algorithm to explore the system through active learning. After candidate models are created, the algorithm attempts to create many ``tests'' which are judged against their ability to disprove as many of the candidate models as possible. Then, the test which rejects as many of the candidate models as possible is used to judge the performance of all candidate models in order to pick the most capable ones. From this, the next generation of candidate models can be generated. 
-Finally, snipping is a process to reduce the complexity of the generated models and prevent over-fitting. In particular, when creating another generation of models, occasionally certain subexpressions will be replaced with a value of the subexpression picked uniformly from its range. This acts to reduce situations where the models will create complex subexpressions which take on narrow ranges of values, demonstrating over-fitting to the data. 
+Finally, snipping is a process to reduce the complexity of the generated models and prevent over-fitting. In particular, when creating another generation of models, occasionally certain subexpressions will be replaced with a value of the subexpression picked uniformly from its range. 
+This process reduces situations where the model constructs complex subexpressions which take on narrow ranges of values, a hallmark of over-fitting data.
 Together, these innovations on the process of symbolic regression allowed Bongard and Lipson to create a framework that was applicable to an array of real-world systems. The framework demonstrated the ability to find nonlinearities and interdependencies as well as an ability to scale successfully. However, the authors note that current limitations include not yet demonstrating scalability to much larger biological models and an inability to work on data where certain variables are unobservable, as a key component of the framework was the active learning \cite{bongard}. 
 
-Schmidt and Lipson present a different algorithm for reconstructing dynamics that is still based on \textbf{symbolic regression} \cite{schmidt}. This paper focuses on presenting a new metric for comparing the accuracy of various candidate equations in order to better search for invariants within the system. In particular, once candidate equations are generated (initially randomly from a set of ``building blocks''), the partial derivative pairings of every pair of variables are compared to the numerically calculated partial derivative pairings in order to select the equations which model these pairs the closest. The next generation of equations is then generated from these best equations probabilistically. The algorithm will return a set of equations when they reach a certain accuracy to the observed data, calculated from a subset of the data randomly selected to be withheld from training. 
-Furthermore, these equations are prioritized according to a measured parsimony, effectively complexity which is calculated by the number of terms in the expression. The authors were able to demonstrate that this algorithm could reconstruct invariants from numerous physical systems effectively. Additionally, they noticed that with a limited set of building blocks, the algorithm found approximations to functions like sines and cosines, utilizing the available building blocks, when such functions were part of the physical invariant \cite{schmidt}. 
+Schmidt and Lipson present another algorithm for reconstructing dynamics, also based on \textbf{symbolic regression} \cite{schmidt}. 
+This paper focuses on presenting a new metric for comparing the accuracy of various candidate equations in order to better search for invariants within the system. 
+In particular, once candidate equations are generated (initially randomly from a set of ``building blocks''), the partial derivative pairings of every pair of variables are compared to the numerically calculated 
+partial derivative pairings in order to select the equations which model these pairs the closest. They generate the next generation of equations probablistically from the best equations.
+To determine the accuracy of equations on the observed data, the authors withhold a random sample from the collected data for testing and when the equations reach a certain level of accuracy, the algorithm terminates.
+Finally, equations are prioritized accoriding to measured parsimony---roughly calculated as the number of terms in the expression. 
+The authors were able to demonstrate that this algorithm could reconstruct invariants from numerous physical systems effectively. Additionally, they noticed that with a limited set of building blocks, the algorithm found approximations to functions like sines and cosines, utilizing the available building blocks, when such functions were part of the physical invariant \cite{schmidt}. 
 
 % TALK ABOUT MORE RECENT PAPER? 
 
@@ -87,7 +101,7 @@ Furthermore, these equations are prioritized according to a measured parsimony, 
 
 % talk about advances in compressed sensing seen here: https://journals.aps.org/prl/pdf/10.1103/PhysRevLett.106.154101
 
-\section{Mathematical Background}
+\section{Mathematical Background} \label{sec:mathematical_background}
 For the SINDy algorithm, the authors aimed to reframe the problem of recovering nonlinear dynamics using \textbf{sparse regression} and \textbf{compressed sensing} \cite{sindy}. Both sparse regression and compressed sensing broadly refer to the process of finding a regression solution to a problem such that the solution is sparse in some space \cite{sindy}. 
 Brunton et al. relate that utilizing sparse regression is a strategy to reduce the noise present in the fitting of systems \cite{sindy}. The particular assumptions for sparse regression come from the idea that in most cases, the dynamics for a particular system will be governed by a small set of given basis functions. Therefore, the sparsity also gives advantages for computation as we can increase the size of the function space dramatically without needing significantly more computation \cite{sindy}. 
 
@@ -147,7 +161,7 @@ The authors additionally suggest a slight modification to the algorithm in order
 \end{equation}
 Then, by sampling data from different values of $\mu$, it is possible for SINDy to reconstruct the system from combinations of $\mathbf x$ as well as $\mu$. In turn, the system can then find the dynamics present with changes in $\mu$, and hence bifurcations. 
 
-\section{Results}
+\section{Results} \label{sec:results}
 \subsection{Code}
 The main object in recreating the results presenting in the paper was writing a codebase that is able to recreate the SINDy algorithm. 
 I wrote the code in the Julia Programming Language \cite{julia} and with all plotting done in PlotlyBase.jl \cite{PlotlyBase.jl}.
@@ -304,7 +318,7 @@ Though, its important to note that depending on the noise added to the system, t
 \end{equation}
 Interestingly, while $\dot y$ remained stable, $\dot x$ tends to me less stable. It is important to note, that while there are many additional higher-order polynomial terms, the qualatative behavior of the system is identical, still finding a Hopf bifurcation.
 
-
+\section{Discussion} \label{sec:discussion}
 
 % \section{}
 % \label{sec:examples}

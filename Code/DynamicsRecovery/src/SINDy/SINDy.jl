@@ -13,5 +13,9 @@ export sparse_regression
 
 include("sparse_regression.jl")
 
+export active_SINDy, measure_accuracy, measure_sparsity
+
+include("active_algorithm.jl")
+
 end # module SINDy
 

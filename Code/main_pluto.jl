@@ -44,6 +44,7 @@ end
 # ╔═╡ a0a26a0d-a7e9-4168-996b-51f44fd96dad
 # Pkg.add("LaTeXStrings")
 # Pkg.add("PlotlyKaleido")
+# Pkg.instantiate()
 
 # ╔═╡ 61ccdc43-c12f-4b59-b746-316c82b342a5
 md"""
@@ -288,7 +289,18 @@ end
 # end
 
 # ╔═╡ daa284d3-f9bc-45b7-9c53-df70ab60c204
+begin 
+	test = active_SINDy(lorenz!, 0.001, (0.,100.), [-8., 7., 27.], (10., 28., 8/3), Tsit5(), 0.01, (0., 100.), TvDiffParams(), 0.0001, 10, 0.98, 0.0001; polynomials = collect(0:5))
+end
 
+# ╔═╡ 9d481e6c-feef-4f85-a9ea-d7def332580d
+begin 
+	test_system = solve_constructed_system(test, [-8., 7., 27.], (0., 100.); polynomials = collect(0:5))
+	test_sol = solve(test_system, Tsit5())
+end
+
+# ╔═╡ ca23d1c7-4efd-4097-a6e4-cf6e5cd84fa5
+plot(test_sol, idxs=(1,2,3))
 
 # ╔═╡ Cell order:
 # ╠═71998b4b-1bfc-4c3d-8c7e-5741de700162
@@ -337,3 +349,5 @@ end
 # ╠═51281685-dea0-4c19-b6c6-893b265b051c
 # ╠═2df97f42-ec7f-4c6f-9431-3b69a8cb8024
 # ╠═daa284d3-f9bc-45b7-9c53-df70ab60c204
+# ╠═9d481e6c-feef-4f85-a9ea-d7def332580d
+# ╠═ca23d1c7-4efd-4097-a6e4-cf6e5cd84fa5
