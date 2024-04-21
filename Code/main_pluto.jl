@@ -279,6 +279,178 @@ begin
 	
 end
 
+# ╔═╡ c65722a9-d01e-4471-9c2c-e38f94dec6fc
+md"""
+# Stability testing
+"""
+
+# ╔═╡ de88e9ef-3f97-4285-9949-12c2a6481bcd
+begin
+	lorenz_polys_1 = collect(0:7)
+	lorenz_polys_2 = collect(0:5)
+	lorenz_polys_3 = collect(0:3)
+	lorenz_polys_4 = collect(0:2)
+	lorenz_polys_5 = collect(0:7)
+	lorenz_polys_6 = collect(0:7)
+	lorenz_func1_1 = []
+	lorenz_func1_2 = []
+	lorenz_func1_3 = []
+	lorenz_func1_4 = []
+	lorenz_func1_5 = [sin_cos_function_library(10)..., exp]
+	lorenz_func1_6 = [exp]
+	
+	Θ_lorenz_01_tv_1 = Θ(X_lorenz_01_tv; polynomials=lorenz_polys_1)
+	Θ_lorenz_01_tv_2 = Θ(X_lorenz_01_tv; polynomials=lorenz_polys_2)
+	Θ_lorenz_01_tv_3 = Θ(X_lorenz_01_tv; polynomials=lorenz_polys_3)
+	Θ_lorenz_01_tv_4 = Θ(X_lorenz_01_tv; polynomials=lorenz_polys_4)
+	Θ_lorenz_01_tv_5 = Θ(X_lorenz_01_tv; polynomials=lorenz_polys_5, functions1 = lorenz_func1_5)
+	Θ_lorenz_01_tv_6 = Θ(X_lorenz_01_tv; polynomials=lorenz_polys_6, functions1 = lorenz_func1_6)
+end
+
+# ╔═╡ b1636e3d-14c9-423c-8425-1cdd4ec5ce3f
+begin 
+	lorenz_polys_7 = [0]
+	lorenz_polys_8 = [0]
+	lorenz_polys_9 = [0]
+	
+	lorenz_func1_7 = [sin_cos_function_library(10)...]
+	lorenz_func1_8 = [sin_cos_function_library(50)...]
+	lorenz_func1_9 = [sin_cos_function_library(100)...]
+
+	Θ_lorenz_01_tv_7 = Θ(X_lorenz_01_tv; polynomials=lorenz_polys_7, functions1 = lorenz_func1_7)
+	Θ_lorenz_01_tv_8 = Θ(X_lorenz_01_tv; polynomials=lorenz_polys_8, functions1 = lorenz_func1_8)
+	Θ_lorenz_01_tv_9 = Θ(X_lorenz_01_tv; polynomials=lorenz_polys_9, functions1 = lorenz_func1_9)
+end
+
+# ╔═╡ c20472a4-502f-465e-99bd-9b2b2529f923
+Ξ_lorenz_01_tv_1 = sparse_regression(Θ_lorenz_01_tv_1, Xdot_lorenz_01_tv, 0.25, 10)
+
+# ╔═╡ 28959896-8c9a-4419-849f-df73b6b3efd0
+Ξ_lorenz_01_tv_2 = sparse_regression(Θ_lorenz_01_tv_2, Xdot_lorenz_01_tv, 0.25, 10)
+
+# ╔═╡ fbc9e493-3626-4a32-b6e6-76e3fd2347ba
+Ξ_lorenz_01_tv_3 = sparse_regression(Θ_lorenz_01_tv_3, Xdot_lorenz_01_tv, 0.25, 10)
+
+# ╔═╡ ba00669c-f5d0-400c-b373-52c7c3f4bfcd
+Ξ_lorenz_01_tv_4 = sparse_regression(Θ_lorenz_01_tv_4, Xdot_lorenz_01_tv, 0.25, 10)
+
+# ╔═╡ a951f5dc-ce5a-4394-8f39-6a8f76b4f536
+Ξ_lorenz_01_tv_5 = sparse_regression(Θ_lorenz_01_tv_5, Xdot_lorenz_01_tv, 0.25, 10)
+
+# ╔═╡ f1ddab03-bd72-4bf6-b4ce-db57b6203df1
+Ξ_lorenz_01_tv_6 = sparse_regression(Θ_lorenz_01_tv_6, Xdot_lorenz_01_tv, 0.25, 10)
+
+# ╔═╡ 3398e448-c159-4e75-8147-26c0aab6fda2
+Ξ_lorenz_01_tv_7 = sparse_regression(Θ_lorenz_01_tv_7, Xdot_lorenz_01_tv, 0.25, 10)
+
+# ╔═╡ 34d575f7-1bfa-439b-92e7-005a1c7c9902
+Ξ_lorenz_01_tv_8 = sparse_regression(Θ_lorenz_01_tv_8, Xdot_lorenz_01_tv, 0.25, 10)
+
+# ╔═╡ f694350a-c4ea-482a-8d4c-f59345e077b5
+Ξ_lorenz_01_tv_9 = sparse_regression(Θ_lorenz_01_tv_9, Xdot_lorenz_01_tv, 0.25, 10)
+
+# ╔═╡ 8e8a48ec-54e4-411d-a5ce-ab6d07db890f
+lorenz_01_tv_system_1 = solve_constructed_system(Ξ_lorenz_01_tv_1, [-8., 7, 27], (0., 1000.); polynomials = lorenz_polys_1, functions1 = lorenz_func1_1)
+
+# ╔═╡ c72fe074-475d-4992-a07d-6feef81aa78b
+lorenz_01_tv_system_2 = solve_constructed_system(Ξ_lorenz_01_tv_2, [-8., 7, 27], (0., 1000.); polynomials = lorenz_polys_2, functions1 = lorenz_func1_2)
+
+# ╔═╡ 6fca07d1-960c-4cf7-89b6-25c86c6ef06e
+lorenz_01_tv_system_3 = solve_constructed_system(Ξ_lorenz_01_tv_3, [-8., 7, 27], (0., 1000.); polynomials = lorenz_polys_3, functions1 = lorenz_func1_3)
+
+# ╔═╡ 7405be92-6b5c-4a1e-a982-71f67ffd8388
+lorenz_01_tv_system_4 = solve_constructed_system(Ξ_lorenz_01_tv_4, [-8., 7, 27], (0., 1000.); polynomials = lorenz_polys_4, functions1 = lorenz_func1_4)
+
+# ╔═╡ d886ae5c-54ca-4c41-a945-0dee9a66f469
+lorenz_01_tv_system_5 = solve_constructed_system(Ξ_lorenz_01_tv_5, [-8., 7, 27], (0., 1000.); polynomials = lorenz_polys_5, functions1 = lorenz_func1_5)
+
+# ╔═╡ 0bcac161-3a8e-448f-8a3e-46a27b00430d
+lorenz_01_tv_system_6 = solve_constructed_system(Ξ_lorenz_01_tv_6, [-8., 7, 27], (0., 1000.); polynomials = lorenz_polys_6, functions1 = lorenz_func1_6)
+
+# ╔═╡ cc9b8403-6a80-497f-aa68-6e24df23ba55
+lorenz_01_tv_system_7 = solve_constructed_system(Ξ_lorenz_01_tv_7, [-8., 7, 27], (0., 1000.); polynomials = lorenz_polys_7, functions1 = lorenz_func1_7)
+
+# ╔═╡ d232946b-2e3a-4435-94cc-1bcc9b93030e
+lorenz_01_tv_system_8 = solve_constructed_system(Ξ_lorenz_01_tv_8, [-8., 7, 27], (0., 1000.); polynomials = lorenz_polys_8, functions1 = lorenz_func1_8)
+
+# ╔═╡ 7ef9229f-4d3f-48d4-b1ae-f2665edaa56d
+print_constructed_system(Ξ_lorenz_01_tv_1; polynomials = lorenz_polys_1, functions1 = lorenz_func1_1)
+
+# ╔═╡ ea9821b3-6209-4f33-9f9b-096963622622
+begin
+	lorenz_1_sol = solve(lorenz_01_tv_system_1, Tsit5())
+	plot(lorenz_1_sol, idxs=(1,2,3), xlabel="x", ylabel="y", zlabel="z", camera=(40,30), legend = false)
+end
+
+# ╔═╡ 84cfffc2-8116-4258-b21e-ec3a781c50d6
+Plots.savefig("./lorenz_1_sol.pdf")
+
+# ╔═╡ 04047955-f751-488b-b5f4-59c549227c8d
+print_constructed_system(Ξ_lorenz_01_tv_2; polynomials = lorenz_polys_2, functions1 = lorenz_func1_2)
+
+# ╔═╡ f050abbf-14ad-4946-b741-41263a842ef8
+begin
+	lorenz_2_sol = solve(lorenz_01_tv_system_2, Tsit5())
+	plot(lorenz_2_sol, idxs=(1,2,3), xlabel="x", ylabel="y", zlabel="z", camera=(40,30), legend = false)
+end
+
+# ╔═╡ e94bfe49-355b-40bc-bd9c-af32ceeb9e72
+Plots.savefig("./lorenz_2_sol.pdf")
+
+# ╔═╡ 9ddf90fc-2cf3-480c-8ea8-74c46176325f
+print_constructed_system(Ξ_lorenz_01_tv_3; polynomials = lorenz_polys_3, functions1 = lorenz_func1_3)
+
+# ╔═╡ 6cffde55-f336-413d-808c-2689cbc56ce5
+begin
+	lorenz_3_sol = solve(lorenz_01_tv_system_3, Tsit5())
+	plot(lorenz_3_sol, idxs=(1,2,3), xlabel="x", ylabel="y", zlabel="z", camera=(40,30), legend = false)
+end
+
+# ╔═╡ a46d0b09-de77-4ccb-80e0-56d530a5c0b9
+Plots.savefig("./lorenz_3_sol.pdf")
+
+# ╔═╡ 094e375d-a718-4b69-b996-0449cdaa9332
+print_constructed_system(Ξ_lorenz_01_tv_4; polynomials = lorenz_polys_4, functions1 = lorenz_func1_4)
+
+# ╔═╡ 2f911b2f-3f92-4505-be88-d8616833d812
+begin
+	lorenz_4_sol = solve(lorenz_01_tv_system_4, Tsit5())
+	plot(lorenz_4_sol, idxs=(1,2,3), xlabel="x", ylabel="y", zlabel="z", camera=(40,30), legend = false)
+end
+
+# ╔═╡ 1f57d65d-3844-4f10-8972-bf20e76c067d
+Plots.savefig("./lorenz_4_sol.pdf")
+
+# ╔═╡ 14fb43e1-9473-4fb9-9fdf-840f0e123d54
+print_constructed_system(Ξ_lorenz_01_tv_5; polynomials = lorenz_polys_5, functions1 = lorenz_func1_5)
+
+# ╔═╡ 1c0d3997-0f39-48c0-8004-1a0f785a2174
+print_constructed_system(Ξ_lorenz_01_tv_6; polynomials = lorenz_polys_6, functions1 = lorenz_func1_6)
+
+# ╔═╡ bfc51a88-1d1a-4fb4-8f5c-4e89a854eaeb
+print_constructed_system(Ξ_lorenz_01_tv_7; polynomials = lorenz_polys_7, functions1 = lorenz_func1_7)
+
+# ╔═╡ d9ff35ff-61bb-48ab-a5e6-74fead0d4593
+begin
+	lorenz_7_sol = solve(lorenz_01_tv_system_7, Tsit5())
+	plot(lorenz_7_sol, idxs=(1,2,3), xlabel="x", ylabel="y", zlabel="z", camera=(40,30), legend = false)
+end
+
+# ╔═╡ 8a0a5622-4828-4749-ba07-fc2ed554872a
+Plots.savefig("./lorenz_7_sol.pdf")
+
+# ╔═╡ 97dc0b67-a357-40d3-9ccf-edade7c5d409
+print_constructed_system(Ξ_lorenz_01_tv_8; polynomials = lorenz_polys_8, functions1 = lorenz_func1_8)
+
+# ╔═╡ b8e77d92-a72e-4129-bf52-b4cec66dc559
+begin
+	lorenz_8_sol = solve(lorenz_01_tv_system_8, Tsit5())
+	plot(lorenz_8_sol, idxs=(1,2,3), xlabel="x", ylabel="y", zlabel="z", camera=(40,30), legend = false)
+end
+
+# ╔═╡ b74f69c5-75a8-4ba5-9349-af9d369729a5
+Plots.savefig("./lorenz_8_sol.pdf")
+
 # ╔═╡ 2df97f42-ec7f-4c6f-9431-3b69a8cb8024
 # begin
 # 	test1 = ODEProblem(lorenz!, [-8., 7., 27.], (0.,100.), (10., 28., 8/3))
@@ -301,6 +473,9 @@ end
 
 # ╔═╡ ca23d1c7-4efd-4097-a6e4-cf6e5cd84fa5
 plot(test_sol, idxs=(1,2,3))
+
+# ╔═╡ 78670281-9464-43a9-8a27-d5e0d05066dc
+print_constructed_system(test; polynomials = collect(0:5))
 
 # ╔═╡ Cell order:
 # ╠═71998b4b-1bfc-4c3d-8c7e-5741de700162
@@ -347,7 +522,48 @@ plot(test_sol, idxs=(1,2,3))
 # ╠═f6cb782c-934b-4342-b008-10be1fda2021
 # ╠═379bba48-ebc0-415d-bd54-25707b97bab1
 # ╠═51281685-dea0-4c19-b6c6-893b265b051c
+# ╟─c65722a9-d01e-4471-9c2c-e38f94dec6fc
+# ╠═de88e9ef-3f97-4285-9949-12c2a6481bcd
+# ╠═b1636e3d-14c9-423c-8425-1cdd4ec5ce3f
+# ╠═c20472a4-502f-465e-99bd-9b2b2529f923
+# ╠═28959896-8c9a-4419-849f-df73b6b3efd0
+# ╠═fbc9e493-3626-4a32-b6e6-76e3fd2347ba
+# ╠═ba00669c-f5d0-400c-b373-52c7c3f4bfcd
+# ╠═a951f5dc-ce5a-4394-8f39-6a8f76b4f536
+# ╠═f1ddab03-bd72-4bf6-b4ce-db57b6203df1
+# ╠═3398e448-c159-4e75-8147-26c0aab6fda2
+# ╠═34d575f7-1bfa-439b-92e7-005a1c7c9902
+# ╠═f694350a-c4ea-482a-8d4c-f59345e077b5
+# ╠═8e8a48ec-54e4-411d-a5ce-ab6d07db890f
+# ╠═c72fe074-475d-4992-a07d-6feef81aa78b
+# ╠═6fca07d1-960c-4cf7-89b6-25c86c6ef06e
+# ╠═7405be92-6b5c-4a1e-a982-71f67ffd8388
+# ╠═d886ae5c-54ca-4c41-a945-0dee9a66f469
+# ╠═0bcac161-3a8e-448f-8a3e-46a27b00430d
+# ╠═cc9b8403-6a80-497f-aa68-6e24df23ba55
+# ╠═d232946b-2e3a-4435-94cc-1bcc9b93030e
+# ╠═7ef9229f-4d3f-48d4-b1ae-f2665edaa56d
+# ╠═ea9821b3-6209-4f33-9f9b-096963622622
+# ╠═84cfffc2-8116-4258-b21e-ec3a781c50d6
+# ╠═04047955-f751-488b-b5f4-59c549227c8d
+# ╠═f050abbf-14ad-4946-b741-41263a842ef8
+# ╠═e94bfe49-355b-40bc-bd9c-af32ceeb9e72
+# ╠═9ddf90fc-2cf3-480c-8ea8-74c46176325f
+# ╠═6cffde55-f336-413d-808c-2689cbc56ce5
+# ╠═a46d0b09-de77-4ccb-80e0-56d530a5c0b9
+# ╠═094e375d-a718-4b69-b996-0449cdaa9332
+# ╠═2f911b2f-3f92-4505-be88-d8616833d812
+# ╠═1f57d65d-3844-4f10-8972-bf20e76c067d
+# ╠═14fb43e1-9473-4fb9-9fdf-840f0e123d54
+# ╠═1c0d3997-0f39-48c0-8004-1a0f785a2174
+# ╠═bfc51a88-1d1a-4fb4-8f5c-4e89a854eaeb
+# ╠═d9ff35ff-61bb-48ab-a5e6-74fead0d4593
+# ╠═8a0a5622-4828-4749-ba07-fc2ed554872a
+# ╠═97dc0b67-a357-40d3-9ccf-edade7c5d409
+# ╠═b8e77d92-a72e-4129-bf52-b4cec66dc559
+# ╠═b74f69c5-75a8-4ba5-9349-af9d369729a5
 # ╠═2df97f42-ec7f-4c6f-9431-3b69a8cb8024
 # ╠═daa284d3-f9bc-45b7-9c53-df70ab60c204
 # ╠═9d481e6c-feef-4f85-a9ea-d7def332580d
 # ╠═ca23d1c7-4efd-4097-a6e4-cf6e5cd84fa5
+# ╠═78670281-9464-43a9-8a27-d5e0d05066dc

@@ -169,16 +169,12 @@ I wrote the code in the Julia Programming Language \cite{julia} and with all plo
 All data used to train the SINDy model was collected by integrating using ordinary differential equation (ODE) solvers provided by the DifferentialEquations.jl \cite{rackauckas2017differentialequations} package.
 For the numerical stability of the model, data was collected at fixed timesteps, as shown in Listing \ref{lorenz_data} for the Lorenz system.
 
-\jlinputlisting[language = Julia, caption = {Lorenz system data simulation}, label = {lorenz_data}, firstline = 9, lastline = 14]{../Code/DynamicsRecovery/src/Systems/lorenz.jl}
 
 Additionally, noise sampled from a standard normal distribution was scaled by a noise parameter and added to the collected data before SINDy was trained on it. This code utilized the Distributions.jl \cite{JSSv098i16}\cite{Distributions.jl-2019} package to provide the normal distribution. 
 Once the data was collected and noise applied, the program constructed the data matrix, $\mathbf X$, and the corresponding derivative matrix, $\mathbf {\dot X}$. Differentiation is done in one of two ways, either through direct numerical differentiation, using Interpolations.jl \cite{Interpolations.jl}, or using the total-variation regularization derivative, provided by NoiseRobustDifferentiation.jl \cite{chartrand2011numerical}\cite{NoiseRobustDifferentiation.jl}.
 Using a linear interpolation to compute the derivatives had the additional benefit of being more stable when samples were not taken with constant timestamps, and deviates in approach from the code written by Brunton et al. \cite{sindy}. 
 The code for constructing the data and derivative libraries is shown in Listing \ref{X_Xdot_construction}. 
 
-% https://tex.stackexchange.com/questions/73231/avoid-page-breaks-in-lstlistings
-% https://tex.stackexchange.com/questions/39017/how-to-influence-the-position-of-float-environments-like-figure-and-table-in-lat
-\jlinputlisting[language = Julia, caption = {Data and derivative library construction}, label = {X_Xdot_construction}, firstline = 68, lastline = 95, float, floatplacement = tb]{../Code/DynamicsRecovery/src/SINDy/data_ingestion.jl}
 
 Utilizing the data matrix, $\mathbf X$, it is then simple to construct the function library, $\mathbf \Theta(\mathbf X)$.
 Unlike the original paper \cite{sindy}, this implementation allows for arbitrary functions to be used and provides a framework for easily expanding the type and quantity of functions used. 
@@ -291,7 +287,7 @@ In order to account for multiple orbits worth of data, the derivatives for each 
 These could then be passed through SINDy as previously. For this example, a basis of all polynomials through 5th degree was used, with sparsity parameter $\lambda = 0.25$ and $10$ iterations of the sparse regression. Figure \ref{fig:discovered_hopf_0005} shows the discovered system as various values of $\mu$ and its ability to detect the Hopf bifurcation. 
 
 \begin{figure}[h]
-	\caption{Discovered Hopf bifurcation. Blue orbits start at $(x_0, y_0) = (2,0)$ and red orbits start at $(x_0, y_0) = (0.01, 0)$.}
+	\caption{Discovered Hopf bifurcation. Blue orbits have initial condition $(x_0, y_0) = (2,0)$ and red orbits have initial condition $(x_0, y_0) = (0.01, 0)$.}
 	\label{fig:discovered_hopf_0005}
 
 	\centering 
@@ -311,14 +307,35 @@ Here we notice that barring the $-0.3081x^4y$ term in the equation for $\dot x$,
 Though, its important to note that depending on the noise added to the system, the resulting system can be significantly worse. In particular, Equation \ref{eq:bad_discovered_hopf_0005} resulted from the same parameters but with different noise applied. 
 \begin{equation}\label{eq:bad_discovered_hopf_0005}
 	\begin{split}
-		\dot x &= -0.9971y + 0.8704\mu x - 0.8617x^3 - 0.9177xy^2 + 0.9186\mu x^2 y  - 0.2853 xy^3 \\
-		&\qquad - 0.9918 \mu x y^2 - 0.8546 x^4y + 1.2614 x^3y^2 - 1.0363 x^2y^3 + 1.0065 xy^4 \\ &\qquad + 0.5446\mu y^3 x, \\
+		\dot x &= -0.9971y + 0.8704\mu x - 0.8617x^3 - 0.9177xy^2 + 0.9186\mu x^2 y   \\
+		&\qquad - 0.2853 xy^3- 0.9918 \mu x y^2 - 0.8546 x^4y + 1.2614 x^3y^2  \\ &\qquad - 1.0363 x^2y^3 + 1.0065 xy^4+ 0.5446\mu y^3 x, \\
 		\dot y &= 0.9968x + 0.9930\mu y - 0.9807x^2y - 0.9822 y^3.
 	\end{split}
 \end{equation}
-Interestingly, while $\dot y$ remained stable, $\dot x$ tends to me less stable. It is important to note, that while there are many additional higher-order polynomial terms, the qualatative behavior of the system is identical, still finding a Hopf bifurcation.
+Interestingly, while $\dot y$ remained stable, $\dot x$ tends to be less stable. It is important to note, that while there are many additional higher-order polynomial terms, the qualatative behavior of the system is identical, still finding a Hopf bifurcation.
 
 \section{Discussion} \label{sec:discussion}
+
+In writing a ground-up implementation of the SINDy algorithm, I was able to replicate much of the success found by Brunton et al. in their paper presenting SINDy \cite{sindy}. In particular, I was able to demonstrate 
+remarkable success in replicating the qualatative behavior of both chaotic systems (Figure \ref{fig:lorenz_system_found_001}, Figure \ref{fig:lorenz_system_found_01}) and in systems with bifurcations (Figure \ref{fig:discovered_hopf_0005}). 
+Further, I found that SINDy was able to successfully determine the relevant nonlinearities in some cases (Equation \ref{eq:found_lorenz_001}, Equation \ref{eq:found_lorenz_001_tv}), and in most cases determine these almost correctly (Equation \ref{eq:found_lorenz_01_tv}, Equation \ref{eq:discovered_hopf_0005}). 
+In all, this demonstrates a remarkable ability for SINDy to be used to gleam insights into the underlying dynamics of a system when only time series data on the system is available. 
+
+However, it is important to note that I observed run to run variability in the success of the SINDy algorithm. In particular, as demonstrated by the difference between Equation \ref{eq:discovered_hopf_0005} and Equation \ref{eq:bad_discovered_hopf_0005}, the stability of SINDy isn't guarnateed. 
+In particular, the run-to-run difference here is in the randomly generated noise. Therefore, this is indicative of SINDy being reliant on particularly beneficial conditions. However, depending on the application, this could be reasonably ignored as the qualitative behavior of system (\ref{eq:discovered_hopf_0005}) and (\ref{eq:bad_discovered_hopf_0005}) was the same, allowing the resulting system to predict broad-strokes behavior of the system. 
+
+Another condition on the performance of the SINDy algorithm is the choice of basis. Brunton et al. emphasize the necessity of a properly chosen basis in their work \cite{sindy}, and I was also able to demonstrate this sensitivity to the basis chosen. 
+A deeper discussion on the instability noticed for different bases when running SINDy on the Lorenz System is noted in Appendix \ref{apx:lorenz_with_diff_bases}, however as summary, the choice of basis is not simply in exhaustion of potential function candidates, but can also cause SINDy to perform worse if the solution is too sparse in the chosen basis. 
+Further, SINDy can show instability with single function additions to the basis, and fails to perform at all when the basis doesn't contain the necessary function candidates. 
+
+For these reasons, exploring methods to determine good bases for SINDy is a fruitful area of further exploration, in addition to methods for automatically determining the sparsity parameter, $\lambda$. % REMOVE IF I DO EXPLORE THIS 
+If such methods could increase the stability of SINDy, they could dramatically improve its usability. Without trust in the solutions produced, particularly with possible variations simply down to noise, it would be difficult to deploy SINDy to an application where the derived system would need to be trusted. 
+A possible extention to address these issues could also be in the form of active learning with the SINDy algorithm. Fasel et al. propose a modification to SINDy with control in order to implement said active learning into SINDy \cite{9683120}. 
+
+Despite the difficulties in the consistency of SINDy, the applications for such a system could be expansive. In systems where non-conventional dynamical systems may apply, an algorithm like SINDy could be used to create a guess at the underlying dynamics in order to improve projections. 
+A situation such as the stock market may be an interesting area of study using SINDy, or a similar algorithm, as the dynamics of the stock market are heavily obfuscated and potentially such an algorithm could gleam useful information on the dynamics from just the data. 
+Robotic applications such as surface finishing could also potentially benefit from an algorithm such as SINDy. In particular, the response to pressure from the end-effector on a part could have implications on the quality of the ultimate finishing job. If in-perfect, but generally accurate systems could be constructed to model such feedback, it could greatly improve the robot's understanding of the part and how to finish it. 
+
 
 % \section{}
 % \label{sec:examples}
@@ -333,6 +350,111 @@ Interestingly, while $\dot y$ remained stable, $\dot x$ tends to me less stable.
 % We thank\dots
 
 % \end{acknowledgments}
+
+\appendix 
+\newpage
+\section{Code} \label{apx:code}
+\jlinputlisting[language = Julia, caption = {Lorenz system data simulation}, label = {lorenz_data}, firstline = 9, lastline = 14]{../Code/DynamicsRecovery/src/Systems/lorenz.jl}
+
+% https://tex.stackexchange.com/questions/73231/avoid-page-breaks-in-lstlistings
+% https://tex.stackexchange.com/questions/39017/how-to-influence-the-position-of-float-environments-like-figure-and-table-in-lat $ , float, floatplacement = tb
+\jlinputlisting[language = Julia, caption = {Data and derivative library construction}, label = {X_Xdot_construction}, firstline = 68, lastline = 95]{../Code/DynamicsRecovery/src/SINDy/data_ingestion.jl}
+
+\newpage 
+\section{Lorenz System with Different Bases} \label{apx:lorenz_with_diff_bases}
+It is important to illustrate the sensitivity of the SINDy algorithm on the chosen basis. For the Lorenz System, performance was strong for bases that included a sufficient array of polynomials. 
+In Figures \ref{fig:found_lorenz_ex_1}, \ref{fig:found_lorenz_ex_2}, \ref{fig:found_lorenz_ex_3}, and \ref{fig:found_lorenz_ex_4} we see the performance of SINDy with a bases comprised of only polynomials. 
+All examples are using the same $\mathbf X$ and $\mathbf {\dot X}$ matrices, with noise $\eta = 0.1$, and using the total-variation regularization derivative.
+We see that when the basis is composed of polynomials up to seventh-degree, the identified system (\ref{eq:discovered_lorenz_ex_1}) has correctly identified the basis components with the exception of including a forcing term in $\dot z$. 
+When including polynomials through fifth-degree, SINDy is able to identify only the correct basis components in the identified system (\ref{eq:discovered_lorenz_ex_2}). 
+Up to third-degree, the performance deteriorates significantly for $\dot z$, including a forcing term in $\dot z$ and including an $x^2$ term instead of a $z$ term (\ref{eq:discovered_lorenz_ex_3}).  
+Finally, when only including up to second-degree polynomials, the minimum number required to model the Lorenz System, SINDy is able to correctly identify $\dot x$ and $\dot z$, but fails to include the $y$ term in $\dot y$ (\ref{eq:discovered_lorenz_ex_4}). 
+
+\begin{figure}[H]
+	\caption{Discovered Lorenz System with basis consisting of all polynomial nonlinearities up to 7th degree. Found system shown in Equation \ref{eq:discovered_lorenz_ex_1}.}
+	\label{fig:found_lorenz_ex_1}
+
+	\centering 
+	\includegraphics[width = 0.47\textwidth, trim={4.3cm, 1.9cm, 4.3cm, 3.5cm}, clip]{lorenz_found_basis_ex_1.pdf}
+
+	\begin{equation}\label{eq:discovered_lorenz_ex_1}
+		\begin{split}
+			\dot x &= -9.8022x + 9.8345y \\ 
+			\dot y &= 25.9081x -0.4297y -0.9457xz \\
+			\dot z &= -1.8995 -2.5435z + 0.9832xy
+		\end{split}
+	\end{equation}
+\end{figure}
+\begin{figure}[H]
+	\caption{Discovered Lorenz System with basis consisting of all polynomial nonlinearities up to 5th degree. Found system shown in Equation \ref{eq:discovered_lorenz_ex_2}.}
+	\label{fig:found_lorenz_ex_2}
+
+	\centering 
+	\includegraphics[width = 0.47\textwidth, trim={4.3cm, 1.9cm, 4.3cm, 3.5cm}, clip]{lorenz_found_basis_ex_2.pdf}
+
+	\begin{equation}\label{eq:discovered_lorenz_ex_2}
+		\begin{split}
+			\dot x &= -9.8022x + 9.8345y \\ 
+			\dot y &= 25.9081x  -0.4297y  -0.9457xz \\
+			\dot z &= -2.6146z + 0.9832xy
+		\end{split}
+	\end{equation}
+\end{figure}
+\begin{figure}[H]
+	\caption{Discovered Lorenz System with basis consisting of all polynomial nonlinearities up to 3th degree. Found system shown in Equation \ref{eq:discovered_lorenz_ex_3}.}
+	\label{fig:found_lorenz_ex_3}
+
+	\centering 
+	\includegraphics[width = 0.47\textwidth, trim={4.3cm, 1.9cm, 4.3cm, 3.5cm}, clip]{lorenz_found_basis_ex_3.pdf}
+
+	\begin{equation}\label{eq:discovered_lorenz_ex_3}
+		\begin{split}
+			\dot x &= -9.8022x + 9.8345y \\ 
+			\dot y &= 25.9081x  -0.4297y  -0.9457xz \\
+			\dot z &= -49.6281 -0.4837x^2 + 1.2756xy
+		\end{split}
+	\end{equation}
+\end{figure}
+\begin{figure}[H]
+	\caption{Discovered Lorenz System with basis consisting of all polynomial nonlinearities up to 2th degree. Found system shown in Equation \ref{eq:discovered_lorenz_ex_4}.}
+	\label{fig:found_lorenz_ex_4}
+
+	\centering 
+	\includegraphics[width = 0.47\textwidth, trim={4.3cm, 1.9cm, 4.3cm, 3.5cm}, clip]{lorenz_found_basis_ex_4.pdf}
+
+	\begin{equation}\label{eq:discovered_lorenz_ex_4}
+		\begin{split}
+			\dot x &= -9.8022x + 9.8345y \\ 
+			\dot y &= 24.8441x  -0.9247xz \\
+			\dot z &= -2.6146z + 0.9832xy
+		\end{split}
+	\end{equation}
+\end{figure}
+
+In two separate tests including exponentials in the function basis (i.e. $e^x$, $e^y$, and $e^z$), SINDy identified the zero map exclusively. This could be due to the sparsity parameter, $\lambda$, being too large for the application, but as a comparison to the other bases tested, $\lambda$ was held constant. 
+This demonstrates some of the inconsistencies present in basis selection. In particular, the only chosen basis which was able to correctly identify the specific basis elements for the sysem was a basis consisting of only polynomials up to fifth-degree. 
+This is particularly interesting as including sixth and seventh degree polynomials decreased the performance of SINDy. Additionally, while it may be expected, including sines and cosines, as with (\ref{eq:found_lorenz_01_tv}), we still found the inclusion of a forcing term in $\dot z$. 
+Further, an inability to identify a system at all when adding exponentials (to bases that worked previously to identify qualitatively similar systems) demonstrates a concerning instability with only small changes in the chosen basis. 
+However, it is important to note that when a sufficient quantity of polynomial basis elements are included, and with or without sines and cosines, SINDy is able to perform admirably in constructing systems with similar qualitative behavior to the Lorenz System. 
+
+For completeness, when running SINDy with a basis that doesn't include any of the relevant terms, it is unable to identify a reasonable system. In particular, running SINDy with bases of only sines and cosines on the Lorenz System results in synthesized behavior completely distinct from the Lorenz System, 
+as seen in Figure \ref{fig:found_lorenz_ex_7} and Figure \ref{fig:found_lorenz_ex_8}.
+\begin{figure}[H]
+	\caption{Discovered Lorenz System with basis $\mathcal B = \{ \sin{ku_i}, \cos{ku_i} \ | \ k \in 1, \ldots, 10, u_i \in \{x,y,z\} \}$.}
+	\label{fig:found_lorenz_ex_7}
+
+	\centering 
+	\includegraphics[width = 0.47\textwidth, trim={4.3cm, 1.9cm, 4.3cm, 3.5cm}, clip]{lorenz_found_basis_ex_7.pdf}
+
+\end{figure}
+\begin{figure}[H]
+	\caption{Discovered Lorenz System with basis $\mathcal B = \{ \sin{ku_i}, \cos{ku_i} \ | \ k \in 1, \ldots, 50, u_i \in \{x,y,z\} \}$.}
+	\label{fig:found_lorenz_ex_8}
+
+	\centering 
+	\includegraphics[width = 0.47\textwidth, trim={4.3cm, 1.9cm, 4.3cm, 3.5cm}, clip]{lorenz_found_basis_ex_8.pdf}
+
+\end{figure}
 
 \newpage
 \printbibliography
