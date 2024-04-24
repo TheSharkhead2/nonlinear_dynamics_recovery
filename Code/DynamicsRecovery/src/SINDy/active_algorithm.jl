@@ -66,17 +66,25 @@ end # function measure_sparsity
 function measure_accuracy(Ξ, testX::Matrix{Float64}, testXdot::Matrix{Float64}; polynomials =[], functions = [], functions1 = [])
     system! = get_constructed_system(Ξ; polynomials = polynomials, functions = functions, functions1 = functions1)
 
-    total_difference = 0.
+    total_difference = BigFloat.(zeros(size(testXdot)[2]))
+
+    total_derivative = BigFloat.(zeros(size(testXdot)[2]))
 
     for (x, xdot) ∈ zip(eachrow(testX), eachrow(testXdot))
         du = zeros(size(xdot))
 
         system!(du, x, (0.), 0.) # zeros are nothing
 
-        total_difference += norm(xdot - du)^2 
+        total_difference += (xdot - du).^2
+        total_derivative += xdot
     end # for
 
-    sqrt(total_difference)/size(testXdot)[1]
+    total_derivative = map(x -> x == 0. ? 1 : x, total_derivative) # edge case when derivatives are all 0
+
+    average_diff = (total_difference ./ size(testXdot)[1] ) ./ total_derivative
+
+    norm(average_diff)
+    # (sqrt(total_difference)/size(testXdot)[1]) / norm(average)
 end # function measure_accuracy
 
 function get_testing_X(X::Matrix{Float64}, Xdot::Matrix{Float64}, a::Float64)

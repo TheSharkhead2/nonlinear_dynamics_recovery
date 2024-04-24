@@ -13,7 +13,7 @@ export sparse_regression
 
 include("sparse_regression.jl")
 
-export active_SINDy, measure_accuracy, measure_sparsity
+export active_SINDy, measure_accuracy, measure_sparsity, get_testing_X
 
 include("active_algorithm.jl")
 

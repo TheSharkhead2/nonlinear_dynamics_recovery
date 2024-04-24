@@ -16,7 +16,7 @@ include("SINDy/SINDy.jl")
 using .SINDy
 export constructX, Θ, sparse_regression
 export TvDiffParams
-export active_SINDy, measure_accuracy, measure_sparsity
+export active_SINDy, measure_accuracy, measure_sparsity, get_testing_X
 
 
 end # module DynamicsRecovery
