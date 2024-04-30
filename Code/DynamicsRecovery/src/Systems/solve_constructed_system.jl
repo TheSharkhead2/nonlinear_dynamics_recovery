@@ -12,8 +12,11 @@ end # function solve_constructed_system
 
 function get_constructed_system(Ξ; polynomials = [], functions = [], functions1 = [])
 
+    funcs::Vector{Any} = deepcopy(functions)
+    println(typeof(funcs))
+
     # add polynomials terms
-    append!(functions, construct_polynomials(polynomials, size(Ξ)[2]))
+    append!(funcs, construct_polynomials(polynomials, size(Ξ)[2]))
 
     # add functions in functions1
     for func in functions1
@@ -21,9 +24,20 @@ function get_constructed_system(Ξ; polynomials = [], functions = [], functions1
             # call function on the nth variable
             f(x...) = func(x[n])
 
-            push!(functions, f)
+            push!(funcs, f)
         end # for n
     end # for func
+
+    # polys = construct_polynomials(polynomials, size(Ξ)[2])
+    # println(typeof(polys))
+    # for func in polys
+    #     for n in 1:size(Ξ)[2]
+    #         # call function on the nth variable
+    #         f(x...) = func(x[n])
+
+    #         push!(funcs, f)
+    #     end # for n
+    # end # for func
 
     # strip out only relevant functions
     relevant_functions::Vector{Vector{Any}} = []
@@ -33,13 +47,13 @@ function get_constructed_system(Ξ; polynomials = [], functions = [], functions1
         n_rel_funcs = []
         n_rel_funcs_coef = []
         
-        for i in 1:length(functions)
+        for i in 1:length(funcs)
             # skip if the coefficient is 0
             if Ξ[i, n] == 0
                 continue
             end # if 
 
-            push!(n_rel_funcs, functions[i])
+            push!(n_rel_funcs, funcs[i])
             push!(n_rel_funcs_coef, Ξ[i, n])
         end # for i
 

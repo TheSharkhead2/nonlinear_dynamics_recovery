@@ -23,13 +23,19 @@ function Θ(X::Matrix{Float64};
 
     polynomial_functions = construct_polynomials(polynomials, size(X)[2])
 
-    append!(functions, polynomial_functions)
+    # append!(functions, polynomial_functions)
 
     for func in functions 
         push!(function_library,
             hcat([func(X[i, :]...) for i in 1:size(X)[1]]) # hcat is to convert to matrix 
         )
     end # for func
+
+    for func in polynomial_functions 
+        push!(function_library,
+            hcat([func(X[i, :]...) for i in 1:size(X)[1]]) # hcat is to convert to matrix 
+        )
+    end # for func 
 
     # for functions1, just apply the function to all items in X 
     for func1 in functions1
